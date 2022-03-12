@@ -23,7 +23,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ extern "C" {
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
 
   // Touch bus & pinout
-  #define ADATOUCH_PIN_INT     10
+  #define ADATOUCH_PIN_INT     38
 
 
   // -----------------------------------------------------------------------------
@@ -182,7 +182,7 @@ extern "C" {
   #define GSLC_USE_FLOAT        0   // 1=Use floating pt library, 0=Fixed-point lookup tables
 
   #define GSLC_DEV_TOUCH ""
-  #define GSLC_USE_PROGMEM      1
+  #define GSLC_USE_PROGMEM      0
 
   #define GSLC_LOCAL_STR        0   // 1=Use local strings (in element array), 0=External
   #define GSLC_LOCAL_STR_LEN    30  // Max string length of text elements

@@ -13,7 +13,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ extern "C" {
 #define  GSLC_TYPEX_LISTBOX GSLC_TYPE_BASE_EXTEND + 10
 
 // Define constants specific to the control
-#define XLISTBOX_SEL_NONE       -1  // Indicator for "no selection"
+#define XLISTBOX_SEL_NONE       -9  // Indicator for "no selection"
 #define XLISTBOX_SIZE_AUTO      -1  // Indicator for "auto-size"
 #define XLISTBOX_BUF_OH_R        2  // Listbox buffer overhead per row
 
@@ -90,6 +90,8 @@ typedef struct {
   int16_t         nItemCurSelLast;  ///< Old selected item to redraw (XLISTBOX_SEL_NONE for none)
   int16_t         nItemSavedSel;    ///< Persistent selected item (ie. saved selection)
   int16_t         nItemTop;         ///< Item to show at top of list after scrolling (0 is default)
+  bool            bGlowLast;        ///< Last glow state
+  bool            bFocusLast;       ///< Last focus state // TODO: Merge with bGlowLast
 
   // Callbacks
   GSLC_CB_XLISTBOX_SEL pfuncXSel; ///< Callback func ptr for selection update
@@ -191,17 +193,42 @@ void gslc_ElemXListboxReset(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef);
 bool gslc_ElemXListboxAddItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, const char* pStrItem);
 
 ///
+/// Insert an item in the listbox at a specific position
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  pElemRef:      Ptr to Element Reference to update
+/// \param[in]  nInsertPos:    Insertion position
+/// \param[in]  pStrItem:      String to use when creating the listbox item
+///
+/// \return true if OK, false if fail (eg. insufficient buffer storage)
+///
+bool gslc_ElemXListboxInsertItemAt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint16_t nInsertPos, 
+  const char* pStrItem);
+
+///
+/// Insert an item in the listbox at a specific position
+///
+/// \param[in]  pGui:          Pointer to GUI
+/// \param[in]  pElemRef:      Ptr to Element Reference to update
+/// \param[in]  nDeletePos:    Position to delete
+///
+/// \return true if OK, false if fail
+///
+bool gslc_ElemXListboxDeleteItemAt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, uint16_t nDeletePos);
+
+///
 /// Get the indexed listbox item
 ///
 /// \param[in]  pGui:          Pointer to GUI
 /// \param[in]  pElemRef:      Ptr to Element Reference to update
-/// \param[in]  nItemCurSel:      Item index to fetch
+/// \param[in]  nItemCurSel:   Item index to fetch
 /// \param[out] pStrItem:      Ptr to the string buffer to receive the item
 /// \param[in]  nStrItemLen:   Maximum buffer length of pStrItem
 ///
 /// \return true if success, false if fail (eg. can't locate item)
 ///
-bool gslc_ElemXListboxGetItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemCurSel, char* pStrItem, uint8_t nStrItemLen);
+bool gslc_ElemXListboxGetItem(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nItemCurSel, 
+  char* pStrItem, uint8_t nStrItemLen);
 
 
 ///
@@ -219,7 +246,7 @@ int16_t gslc_ElemXListboxGetItemCnt(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef);
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef:   Void ptr to Element (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
@@ -231,7 +258,7 @@ bool gslc_ElemXListboxDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef:   Void ptr to Element ref (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element

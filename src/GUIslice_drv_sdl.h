@@ -10,7 +10,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -122,6 +122,8 @@ typedef struct {
   #if defined(DRV_TOUCH_TSLIB)
   struct tsdev*       pTsDev;           ///< Ptr to touchscreen device
   #endif
+
+  gslc_tsRect         rClipRect;        ///< Clipping rectangle
 
 } gslc_tsDriver;
 

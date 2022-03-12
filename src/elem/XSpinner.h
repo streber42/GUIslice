@@ -13,7 +13,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ extern "C" {
 #define XSPINNER_COMP_CNT 3
 
 // Define the max string length to allocate for dynamic text elements
-#define XSPINNER_STR_LEN  6
+#define XSPINNER_STR_LEN  8
 
 // Define the status for GSLC_CB_INPUT callback
 #define XSPINNER_CB_STATE_UPDATE 3
@@ -135,7 +135,7 @@ bool gslc_ElemXSpinnerSetChars(void* pvGui,gslc_tsElemRef* pElemRef,uint8_t cInc
 /// - Called during redraw
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef:   Void ptr to Element (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
@@ -170,7 +170,7 @@ void gslc_ElemXSpinnerSetCounter(gslc_tsGui* pGui,gslc_tsXSpinner* pSpinner,int1
 /// - This is called internally by the Spinner touch handler
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef    Void ptr to Element ref (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef    Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nX:          Touch X coord
 /// \param[in]  nY:          Touch Y coord
@@ -184,7 +184,7 @@ bool gslc_ElemXSpinnerClick(void* pvGui,void *pvElemRef,gslc_teTouch eTouch,int1
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef:   Void ptr to Element ref (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element

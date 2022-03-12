@@ -7,7 +7,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,11 @@
 #include <stdio.h>
 
 #if (GSLC_USE_PROGMEM)
+  #if defined(__AVR__)
     #include <avr/pgmspace.h>
+  #else
+    #include <pgmspace.h>
+  #endif
 #endif
 
 // ----------------------------------------------------------------------------
@@ -151,7 +155,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
     rSubElem,"+",0,nFontId,&gslc_ElemXSelNumClick);
   #else
-  strncpy(pXData->acElemTxt[0],"+",SELNUM_STR_LEN-1);
+  gslc_StrCopy(pXData->acElemTxt[0],"+",SELNUM_STR_LEN);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_INC,GSLC_PAGE_NONE,
     rSubElem,pXData->acElemTxt[0],SELNUM_STR_LEN,
     nFontId,&gslc_ElemXSelNumClick);
@@ -167,7 +171,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
     rSubElem,"-",0,nFontId,&gslc_ElemXSelNumClick);
   #else
-  strncpy(pXData->acElemTxt[1],"-",SELNUM_STR_LEN-1);
+  gslc_StrCopy(pXData->acElemTxt[1],"-",SELNUM_STR_LEN);
   pElemRefTmp = gslc_ElemCreateBtnTxt(pGui,SELNUM_ID_BTN_DEC,GSLC_PAGE_NONE,
     rSubElem,pXData->acElemTxt[1],SELNUM_STR_LEN,
     nFontId,&gslc_ElemXSelNumClick);
@@ -183,7 +187,7 @@ gslc_tsElemRef* gslc_ElemXSelNumCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t 
   pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
     rSubElem,"0",0,nFontId);
   #else
-  strncpy(pXData->acElemTxt[2],"0",SELNUM_STR_LEN-1);
+  gslc_StrCopy(pXData->acElemTxt[2],"0",SELNUM_STR_LEN);
   pElemRefTmp = gslc_ElemCreateTxt(pGui,SELNUM_ID_TXT,GSLC_PAGE_NONE,
     rSubElem,pXData->acElemTxt[2],SELNUM_STR_LEN,nFontId);
   #endif

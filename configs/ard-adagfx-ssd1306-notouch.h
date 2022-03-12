@@ -32,7 +32,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -77,8 +77,17 @@ extern "C" {
   // -----------------------------------------------------------------------------
   #define DRV_DISP_ADAGFX           // Adafruit-GFX library
   #define DRV_DISP_ADAGFX_SSD1306   // Adafruit SSD1306
+  // Must uncomment either SPI or I2C mode: (otherwise will default to SPI mode)
+  #define DRV_DISP_ADAGFX_SSD1306_SPI 
+  //#define DRV_DISP_ADAGFX_SSD1306_I2C
+  //#define DRV_DISP_ADAGFX_SSD1306_I2C_ADDR 0x3C // if not set, then use library default addr.
+
   #define DRV_TOUCH_NONE            // No touch enabled
 
+  // Display initialization
+  // - Width,Height:
+  // -   128,64  128,32  96,16
+  #define DRV_DISP_ADAGFX_SSD1306_INIT 128,32
 
   // -----------------------------------------------------------------------------
   // SECTION 2: Pinout

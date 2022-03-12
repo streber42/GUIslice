@@ -13,7 +13,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -130,6 +130,18 @@ void gslc_ElemXProgressSetFlip(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bF
 
 
 ///
+/// Set the gauge color
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  colGauge:    Color for the gauge's fill
+///
+/// \return none
+///
+void gslc_ElemXProgressSetGaugeCol(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_tsColor colGauge);
+
+
+///
 /// Draw a gauge element on the screen
 /// - Called from gslc_ElemDraw()
 ///
@@ -195,7 +207,7 @@ bool gslc_ElemXProgressDrawHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
 
 #define gslc_ElemXProgressCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
     nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXProgress sGauge##nElemId;                           \
   sGauge##nElemId.nMin = nMin_;                                   \
@@ -239,7 +251,7 @@ bool gslc_ElemXProgressDrawHelp(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,gslc_t
 
 #define gslc_ElemXProgressCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,\
     nMin_,nMax_,nVal_,colFrame_,colFill_,colGauge_,bVert_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXProgress sGauge##nElemId;                           \
   sGauge##nElemId.nMin = nMin_;                                   \

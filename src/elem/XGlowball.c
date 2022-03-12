@@ -7,7 +7,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,11 @@
 #include <stdio.h>
 
 #if (GSLC_USE_PROGMEM)
+  #if defined(__AVR__)
     #include <avr/pgmspace.h>
+  #else
+    #include <pgmspace.h>
+  #endif
 #endif
 
 // ----------------------------------------------------------------------------
@@ -151,7 +155,7 @@ void drawXGlowballArc(gslc_tsGui* pGui, gslc_tsXGlowball* pGlowball, int16_t nMi
   nSegStart = nAngStart * pGlowball->nQuality / 360;
   nSegEnd = nAngEnd * pGlowball->nQuality / 360;
 
-  for (uint16_t nSegInd = nSegStart; nSegInd < nSegEnd; nSegInd++) {
+  for (int16_t nSegInd = nSegStart; nSegInd < nSegEnd; nSegInd++) {
     nAng64 = nSegInd * nStep64;
     nAng64 = nAng64 % (360 * 64);
 

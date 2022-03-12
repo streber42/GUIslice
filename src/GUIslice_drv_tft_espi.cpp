@@ -7,7 +7,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -146,8 +146,13 @@ TFT_eSPI m_disp = TFT_eSPI();
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_XPT2046_PS)
   const char* m_acDrvTouch = "XPT2046_PS(SPI-HW)";
-  // Use SPI, no IRQs
-  XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
+  #if defined(XPT2046_IRQ)
+    // Use SPI, with IRQs
+    XPT2046_Touchscreen m_touch(XPT2046_CS, XPT2046_IRQ); // Chip Select pin, IRQ pin
+  #else
+    // Use SPI, no IRQs
+    XPT2046_Touchscreen m_touch(XPT2046_CS); // Chip Select pin
+  #endif  
   #define DRV_TOUCH_INSTANCE
 // ------------------------------------------------------------------------
 #elif defined(DRV_TOUCH_TFT_ESPI)
@@ -189,6 +194,8 @@ bool gslc_DrvInit(gslc_tsGui* pGui)
     gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
 
     pDriver->nColBkgnd = GSLC_COL_BLACK;
+
+    pDriver->pvFontLast = NULL;
 
     // These displays can accept partial redraw as they retain the last
     // image in the controller graphics RAM
@@ -332,7 +339,16 @@ bool gslc_DrvSetClipRect(gslc_tsGui* pGui,gslc_tsRect* pRect)
     pDriver->rClipRect = *pRect;
   }
 
-  // TODO: For ILI9341, perhaps we can leverage m_disp.setAddrWindow(x0, y0, x1, y1)?
+  // Rendering within clipping regions is provided by TFT_eSPI's
+  // setViewport() API. Enabling this functionality provides
+  // greatly enhanced redraw performance when updating the
+  // entire page.
+  // The setViewport() API is only available in recent versions of
+  // TFT_eSPI (v2.3.2+).
+  #if (TFT_ESPI_FEATURES & 0x0001) // Bit 0 = Viewport capability
+    m_disp.setViewport(pDriver->rClipRect.x,pDriver->rClipRect.y,pDriver->rClipRect.w,pDriver->rClipRect.h,false);
+  #endif
+
   return true;
 }
 
@@ -391,6 +407,7 @@ bool gslc_DrvGetTxtSize(gslc_tsGui* pGui,gslc_tsFont* pFont,const char* pStr,gsl
 bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,int16_t nY1,int8_t eTxtAlign,
         gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
 {
+  gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
   uint16_t nTxtScale = pFont->nSize;
@@ -407,7 +424,10 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
   } else {
     #ifdef SMOOTH_FONT
       if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
-        m_disp.loadFont((const char*)pFont->pvFont);
+        if (pFont->pvFont != pDriver->pvFontLast) {
+          m_disp.loadFont((const char*)pFont->pvFont);
+          pDriver->pvFontLast = pFont->pvFont;
+        }
       } else {
         m_disp.setFreeFont((const GFXfont *)pFont->pvFont);
       }
@@ -439,12 +459,6 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
 
   m_disp.drawString(pStr,nTxtX,nTxtY);
 
-  #ifdef SMOOTH_FONT
-    if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
-      m_disp.unloadFont();
-    }
-  #endif
-
   // For now, always return true
   return true;
 }
@@ -464,12 +478,16 @@ bool gslc_DrvDrawTxtAlign(gslc_tsGui* pGui,int16_t nX0,int16_t nY0,int16_t nX1,i
 // should be used instead.
 bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* pFont,const char* pStr,gslc_teTxtFlags eTxtFlags,gslc_tsColor colTxt, gslc_tsColor colBg=GSLC_COL_BLACK)
 {
+  gslc_tsDriver*  pDriver = (gslc_tsDriver*)(pGui->pvDriver);
   uint16_t nTxtScale = pFont->nSize;
   uint16_t nColRaw = gslc_DrvAdaptColorToRaw(colTxt);
   uint16_t nColBgRaw = gslc_DrvAdaptColorToRaw(colBg);
   #ifdef SMOOTH_FONT
       if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
-        m_disp.loadFont((const char*)pFont->pvFont);
+        if (pFont->pvFont != pDriver->pvFontLast) {
+          m_disp.loadFont((const char*)pFont->pvFont);
+          pDriver->pvFontLast = pFont->pvFont;
+        }
         m_disp.setTextColor(nColRaw,nColBgRaw);
       } else {
         m_disp.setTextColor(nColRaw);
@@ -497,11 +515,6 @@ bool gslc_DrvDrawTxt(gslc_tsGui* pGui,int16_t nTxtX,int16_t nTxtY,gslc_tsFont* p
     }
     m_disp.println();
   }
-  #ifdef SMOOTH_FONT
-    if (pFont->eFontRefType  == GSLC_FONTREF_FNAME){
-      m_disp.unloadFont();
-    }
-  #endif
 
   return true;
 }
@@ -774,18 +787,23 @@ void gslc_DrvDrawBmp24FromMem(gslc_tsGui* pGui,int16_t nDstX, int16_t nDstY,cons
   const uint16_t* pImage = (const uint16_t*)pBitmap;
   int16_t h = *(pImage++);
   int16_t w = *(pImage++);
-  int row, col;
-  for (row=0; row<h; row++) { // For each scanline...
-    for (col=0; col<w; col++) { // For each pixel...
-      if (bProgMem) {
-        //To read from Flash Memory, pgm_read_XXX is required.
-        //Since image is stored as uint16_t, pgm_read_word is used as it uses 16bit address
-        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, pgm_read_word(pImage++));
-      } else {
-        gslc_DrvDrawPoint_base(nDstX+col, nDstY+row, *(pImage++));
-      }
-    } // end pixel
-  }
+
+  // Swap the colour byte order when rendering
+  m_disp.setSwapBytes(true); 
+  #if (GSLC_BMP_TRANS_EN)
+    uint16_t nTransRaw = gslc_DrvAdaptColorToRaw(pGui->sTransCol);
+    if (bProgMem) {
+      m_disp.pushImage(nDstX, nDstY, w, h, (const uint16_t*) pImage, nTransRaw); 
+    } else {
+      m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage, nTransRaw); 
+    }
+  #else
+    if (bProgMem) {
+      m_disp.pushImage(nDstX, nDstY, w, h, (const uint16_t*) pImage); 
+    } else {
+      m_disp.pushImage(nDstX, nDstY, w, h, (uint16_t*) pImage); 
+    }
+  #endif // GSLC_BMP_TRANS_EN
 }
 
 #if (GSLC_SD_EN)
@@ -948,9 +966,9 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
 {
   #if defined(DBG_DRIVER)
-  char addr[6];
+  char addr[9];
   GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
-  sprintf(addr,"%04X",(unsigned int)sImgRef.pImgBuf);
+  sprintf(addr,"%08X",(unsigned int)sImgRef.pImgBuf);
   GSLC_DEBUG_PRINT("%s\n",addr);
   #endif
 
@@ -964,12 +982,10 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
     #if (GSLC_SPIFFS_EN)
       if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_JPG) {
         // Draw Jpeg from SPIFFS file system
-        gslc_DrvDrawJpegFromFile(pGui,nDstX,nDstY,sImgRef);
-        return true;
+        return gslc_DrvDrawJpegFromFile(pGui,nDstX,nDstY,sImgRef);
       } else if ((sImgRef.eImgFlags & GSLC_IMGREF_FMT) == GSLC_IMGREF_FMT_BMP24) {
         // Draw Bitmap from SPIFFS file system
-        gslc_DrvDrawBmpFromFile(pGui,nDstX,nDstY,sImgRef);
-        return true;
+        return gslc_DrvDrawBmpFromFile(pGui,nDstX,nDstY,sImgRef);
       } else {
         return false; // TODO: not yet supported
       }
@@ -1020,6 +1036,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       }
     #else
       // SD card access not enabled
+      GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN not enabled\n","");
       return false;
     #endif
 
@@ -1036,8 +1053,9 @@ bool gslc_DrvDrawBmpFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_t
   const char* pStrFname = sImgRef.pFname;
 
   // Load BMP image from file system
+  // NOTE: No return value is provided upon decoder failure,
+  //       so we always proceed as if it is OK.
   fex.drawBmp(pStrFname, nDstX, nDstY);
-
   return true;
 }
 
@@ -1048,9 +1066,16 @@ bool gslc_DrvDrawJpegFromFile(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_
   // Load JPEG image from file system
 #if defined(ESP32)
   // use optimized ESP32 native decoder
-  fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY);
+  // drawJpgFile() can return false upon a decoding failure (eg. for
+  // unsupported progressive JPEG images), so we trap it here.
+  if (!fex.drawJpgFile(SPIFFS, pStrFname, nDstX, nDstY)) {
+    GSLC_DEBUG_PRINT("ERROR: DrvDrawJpegFromFile() failed on [%s]",pStrFname);
+    return false;
+  }
 #else 
   // use library decoder
+  // NOTE: No return value is provided upon decoder failure,
+  //       so we always proceed as if it is OK.
   fex.drawJpeg(pStrFname, nDstX, nDstY);
 #endif
 
@@ -1183,12 +1208,21 @@ bool gslc_DrvInitTouch(gslc_tsGui* pGui, const char* acDev) {
   #endif
 
   // Load calibration settings for resistive displays from config
-  #if defined(DRV_TOUCH_TYPE_RES)
+  #if defined(DRV_TOUCH_CALIB)
     pGui->nTouchCalXMin = ADATOUCH_X_MIN;
     pGui->nTouchCalXMax = ADATOUCH_X_MAX;
     pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
     pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
-  #endif // DRV_TOUCH_TYPE_RES
+    #if defined(ADATOUCH_PRESS_MIN)
+      pGui->nTouchCalPressMin = ADATOUCH_PRESS_MIN;
+      pGui->nTouchCalPressMax = ADATOUCH_PRESS_MAX;
+    #else
+      // For backward compatibility, if these config settings
+      // were not included in the config file, provide defaults.
+      pGui->nTouchCalPressMin = 200;
+      pGui->nTouchCalPressMax = 4000;
+    #endif
+  #endif // DRV_TOUCH_CALIB
 
   // Support touch controllers with swapped X & Y
   #if defined(ADATOUCH_REMAP_YX)
@@ -1258,14 +1292,14 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
     uint8_t nSamples = 5;
     uint8_t nSamplesValid = 0;
     while (nSamples--) {
-      if (TFT_eSPI_validTouch(&nRawX, &nRawY, 20)) nSamplesValid++;
+      if (TFT_eSPI_validTouch(&nRawX, &nRawY, pGui->nTouchCalPressMin)) nSamplesValid++;
     }
     if (nSamplesValid < 1) {
       nRawPress = 0; // Invalidate the reading
     }
     else {
       // Force a value within range
-      nRawPress = ADATOUCH_PRESS_MIN + 1;
+      nRawPress = pGui->nTouchCalPressMin + 1;
     }
   #else
     // No additional touch filtering
@@ -1274,7 +1308,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
     m_disp.getTouchRaw(&nRawX, &nRawY);
   #endif // DRV_TOUCH_TFT_ESPI_FILTER
 
-  if ((nRawPress > ADATOUCH_PRESS_MIN) && (nRawPress < ADATOUCH_PRESS_MAX)) {
+  if ((nRawPress > pGui->nTouchCalPressMin) && (nRawPress < pGui->nTouchCalPressMax)) {
 
     m_nLastRawX = nRawX;
     m_nLastRawY = nRawY;
@@ -1318,7 +1352,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
     nInputY = nRawY;
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_TYPE_RES)
+    #if defined(DRV_TOUCH_CALIB)
       if (pGui->bTouchRemapEn) {
         // Perform scaling from input to output
         // - Calibration done in native orientation (GSLC_ROTATE=0)
@@ -1357,7 +1391,7 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
       // No scaling from input to output
       nOutputX = nInputX;
       nOutputY = nInputY;
-    #endif  // DRV_TOUCH_TYPE_RES
+    #endif  // DRV_TOUCH_CALIB
   
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
@@ -1550,12 +1584,21 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui, int16_t* pnX, int16_t* pnY, uint16_t* pn
 bool gslc_TDrvInitTouch(gslc_tsGui* pGui,const char* acDev) {
 
   // Capture default calibration settings for resistive displays
-  #if defined(DRV_TOUCH_TYPE_RES)
+  #if defined(DRV_TOUCH_CALIB)
     pGui->nTouchCalXMin = ADATOUCH_X_MIN;
     pGui->nTouchCalXMax = ADATOUCH_X_MAX;
     pGui->nTouchCalYMin = ADATOUCH_Y_MIN;
     pGui->nTouchCalYMax = ADATOUCH_Y_MAX;
-  #endif // DRV_TOUCH_TYPE_RES
+    #if defined(ADATOUCH_PRESS_MIN)
+      pGui->nTouchCalPressMin = ADATOUCH_PRESS_MIN;
+      pGui->nTouchCalPressMax = ADATOUCH_PRESS_MAX;
+    #else
+      // For backward compatibility, if these config settings
+      // were not included in the config file, provide defaults.
+      pGui->nTouchCalPressMin = 200;
+      pGui->nTouchCalPressMax = 4000;
+    #endif
+  #endif // DRV_TOUCH_CALIB
 
   // Support touch controllers with swapped X & Y
   #if defined(ADATOUCH_REMAP_YX)
@@ -1758,7 +1801,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
   // - small: If touch active and hard
   // - large: If touch active and soft
   // Note that the "pressure" (z) value is inverted in interpretation
-  if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+  if ((p.z > pGui->nTouchCalPressMin) && (p.z < pGui->nTouchCalPressMax)) {
     nRawX = p.x;
     nRawY = p.y;
     nRawPress = p.z;
@@ -1811,7 +1854,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // once we are done with our polling.
       uint16_t nPressCur = m_touch.pressure();
 
-      if ((nPressCur > ADATOUCH_PRESS_MIN) && (nPressCur < ADATOUCH_PRESS_MAX)) {
+      if ((nPressCur > pGui->nTouchCalPressMin) && (nPressCur < pGui->nTouchCalPressMax)) {
         // The unfiltered result is that the display is still pressed
         // Therefore we are likely in case (b) and should return our
         // last saved result (with touch pressure still active)
@@ -1869,7 +1912,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     TS_Point p = m_touch.getPoint();
 
-    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+    if ((p.z > pGui->nTouchCalPressMin) && (p.z < pGui->nTouchCalPressMax)) {
       nRawX = p.x;
       nRawY = p.y;
       nRawPress = p.z;
@@ -1899,7 +1942,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
 
     TS_Point p = m_touch.getPoint();
 
-    if ((p.z > ADATOUCH_PRESS_MIN) && (p.z < ADATOUCH_PRESS_MAX)) {
+    if ((p.z > pGui->nTouchCalPressMin) && (p.z < pGui->nTouchCalPressMax)) {
       // PaulStoffregen/XPT2046 appears to use a different orientation
       // than other libraries. Therefore, we will remap it here
       // to match the default portrait orientation.
@@ -1996,7 +2039,7 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
     nInputY = nRawY;
 
     // For resistive displays, perform constraint and scaling
-    #if defined(DRV_TOUCH_TYPE_RES)
+    #if defined(DRV_TOUCH_CALIB)
       if (pGui->bTouchRemapEn) {
         // Perform scaling from input to output
         // - Calibration done in native orientation (GSLC_ROTATE=0)
@@ -2024,14 +2067,14 @@ bool gslc_TDrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPr
       // No scaling from input to output
       nOutputX = nInputX;
       nOutputY = nInputY;
-    #endif  // DRV_TOUCH_TYPE_RES
+    #endif  // DRV_TOUCH_CALIB
   
     #ifdef DBG_TOUCH
     GSLC_DEBUG_PRINT("DBG: PreRotate: x=%u y=%u\n", nOutputX, nOutputY);
-    #if defined(DRV_TOUCH_TYPE_RES)
+    #if defined(DRV_TOUCH_CALIB)
       GSLC_DEBUG_PRINT("DBG: RotateCfg: remap=%u nSwapXY=%u nFlipX=%u nFlipY=%u\n",
         pGui->bTouchRemapEn,pGui->nSwapXY,pGui->nFlipX,pGui->nFlipY);
-    #endif // DRV_TOUCH_TYPE_RES
+    #endif // DRV_TOUCH_CALIB
     #endif // DBG_TOUCH
 
     // Perform remapping due to current orientation

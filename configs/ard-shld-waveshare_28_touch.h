@@ -25,7 +25,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -118,6 +118,7 @@ extern "C" {
 
   // Touch bus & pinout
   #define XPT2046_CS     4
+  #define XPT2046_IRQ    255 // IRQ pin or 255 if no IRQ used
 
 
   // . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .

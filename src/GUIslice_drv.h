@@ -10,7 +10,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ extern "C" {
 #elif defined(DRV_DISP_UTFT)
   #include "GUIslice_drv_utft.h"
 #else
-  #error "Driver needs to be specified in GUIslice_config_*.h (DRV_DISP_*)"
+  #error No driver specified (DRV_DISP_*). Ensure a config is selected in GUIslice_config.h
 #endif
 
 

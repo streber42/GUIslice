@@ -15,7 +15,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -170,7 +170,7 @@ void gslc_ElemXSeekbarSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef:   Void ptr to Element (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
@@ -182,7 +182,7 @@ bool gslc_ElemXSeekbarDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef:   Void ptr to Element ref (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element
@@ -207,25 +207,25 @@ bool gslc_ElemXSeekbarTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int1
 ///
 /// Create a Seekbar Element in Flash
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Unique element ID to assign
-/// \param[in]  nPage:       Page ID to attach element to
-/// \param[in]  nX:          X coordinate of element
-/// \param[in]  nY:          Y coordinate of element
-/// \param[in]  nW:          Width of element
-/// \param[in]  nH:          Height of element
-/// \param[in]  nPosMin_:    Minimum position value
-/// \param[in]  nPosMax_:    Maximum position value
-/// \param[in]  nPos_:       Starting position value
-/// \param[in]  nProgressW:  Width of progress track
-/// \param[in]  nRemainW:    Width of  remaining track
-/// \param[in]  nThumbSz_:   Size of the thumb control
-/// \param[in]  colProgress: Color of progress fill bar
-/// \param[in]  colRemain:   Color remaining fill bar
-/// \param[in]  colThumb:    Color for the thumb indicator
-/// \param[in]  bVert_:      Orientation (true for vertical)
-/// \param[in]  colFrame_:   Color of the element frame
-/// \param[in]  colFill_:    Color of the element fill
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nElemId:      Unique element ID to assign
+/// \param[in]  nPage:        Page ID to attach element to
+/// \param[in]  nX:           X coordinate of element
+/// \param[in]  nY:           Y coordinate of element
+/// \param[in]  nW:           Width of element
+/// \param[in]  nH:           Height of element
+/// \param[in]  nPosMin_:     Minimum position value
+/// \param[in]  nPosMax_:     Maximum position value
+/// \param[in]  nPos_:        Starting position value
+/// \param[in]  nProgressW_:  Width of progress track
+/// \param[in]  nRemainW_:    Width of  remaining track
+/// \param[in]  nThumbSz_:    Size of the thumb control
+/// \param[in]  colProgress_: Color of progress fill bar
+/// \param[in]  colRemain_:   Color remaining fill bar
+/// \param[in]  colThumb_:    Color for the thumb indicator
+/// \param[in]  bVert_:       Orientation (true for vertical)
+/// \param[in]  colFrame_:    Color of the element frame
+/// \param[in]  colFill_:     Color of the element fill
 ///
 /// \return none
 ///
@@ -236,7 +236,7 @@ bool gslc_ElemXSeekbarTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int1
 #define gslc_ElemXSeekbarCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nPosMin_,nPosMax_, \
     nPos_,nProgressW_,nRemainW_,nThumbSz_,colProgress_,colRemain_,colThumb_,bVert_, \
     colFrame_,colFill_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXSeekbar sSeekbar##nElemId;                         \
   sSeekbar##nElemId.bVert = bVert_;                                \
@@ -284,7 +284,7 @@ bool gslc_ElemXSeekbarTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int1
 #define gslc_ElemXSeekbarCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,nPosMin_,nPosMax_, \
     nPos_,nProgressW_,nRemainW_,nThumbSz_,colProgress_,colRemain_,colThumb_,bVert_, \
     colFrame_,colFill_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXSeekbar sSeekbar##nElemId;                         \
   sSeekbar##nElemId.bVert = bVert_;                                \

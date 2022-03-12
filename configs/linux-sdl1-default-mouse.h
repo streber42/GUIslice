@@ -21,7 +21,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -121,6 +121,7 @@ extern "C" {
   #define GSLC_FEATURE_COMPOUND       1   // Compound elements (eg. XSelNum)
   #define GSLC_FEATURE_XTEXTBOX_EMBED 0   // XTextbox control with embedded color
   #define GSLC_FEATURE_INPUT          1   // Keyboard / GPIO input control
+  #define GSLC_FEATURE_FOCUS_ON_TOUCH 0   // If FEATURE_INPUT: set focus whenever touch elems
 
   // Enable support for SD card
   // - Set to 1 to enable, 0 to disable

@@ -7,7 +7,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,11 @@
 #include <stdio.h>
 
 #if (GSLC_USE_PROGMEM)
+  #if defined(__AVR__)
     #include <avr/pgmspace.h>
+  #else
+    #include <pgmspace.h>
+  #endif
 #endif
 
 // ----------------------------------------------------------------------------
@@ -104,7 +108,7 @@ gslc_tsElemRef* gslc_ElemXGraphCreate(gslc_tsGui* pGui,int16_t nElemId,int16_t n
   // - Data value is directly mapped to height in Y direction
   pXData->nPlotValMin   = 0;
   pXData->nPlotValMax   = pXData->nWndHeight;
-  pXData->nPlotIndMax    = pXData->nWndWidth;
+  pXData->nPlotIndMax   = pXData->nWndWidth;
 
 
   // Clear the buffer
@@ -235,6 +239,31 @@ void gslc_ElemXGraphAdd(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,int16_t nVal)
   gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_INC);
 }
 
+void gslc_ElemXGraphReset(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef) {
+
+
+  gslc_tsXGraph*  pBox;
+  gslc_tsElem*    pElem = gslc_GetElemFromRef(pGui,pElemRef);
+  pBox = (gslc_tsXGraph*)(pElem->pXData);
+
+  pBox->nBufCnt  = 0;
+  pBox->nPlotIndStart   = 0;
+
+  // Default scale is
+  // - Each data point (buffer row) gets 1 pixel in X direction
+  // - Data value is directly mapped to height in Y direction
+  pBox->nPlotValMin   = 0;
+  pBox->nPlotValMax   = pBox->nWndHeight;
+  pBox->nPlotIndMax   = pBox->nWndWidth;
+
+  memset(pBox->pBuf,0,pBox->nBufMax*sizeof(int16_t));
+
+  // Set the redraw flag
+  // - As we are clearing the buffer, force a full redraw
+  gslc_ElemSetRedraw(pGui,pElemRef,GSLC_REDRAW_FULL);
+
+}
+
 
 bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 {
@@ -275,10 +304,10 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 
   int16_t           nDataVal;
   uint16_t          nCurX = 0;
-  int16_t           nPixX,nPixY,nPixYBase,nPixYOffset;
+  uint16_t          nPixX,nPixY,nPixYBase,nPixYOffset;
   gslc_tsColor      colGraph;
 
-  uint8_t           nScrollMax;
+  uint16_t          nScrollMax;
 
   // Initialize color state
   colGraph  = pBox->colGraph;
@@ -293,10 +322,10 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
   if (pBox->bScrollEn) {
     pBox->nPlotIndStart -= (nScrollMax - pBox->nScrollPos);
   }
-  pBox->nPlotIndStart  = pBox->nPlotIndStart % pBox->nBufMax;
-
-  uint8_t nPlotInd = 0;
-  uint8_t nIndMax = 0;
+  pBox->nPlotIndStart = pBox->nBufMax ? (pBox->nPlotIndStart % pBox->nBufMax) : 0;
+  
+  uint16_t nPlotInd = 0;
+  uint16_t nIndMax = 0;
   nIndMax = (pBox->nBufMax < pBox->nPlotIndMax)? pBox->nBufMax : pBox->nPlotIndMax;
   for (nPlotInd=0;nPlotInd<nIndMax;nPlotInd++) {
 
@@ -333,16 +362,13 @@ bool gslc_ElemXGraphDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
     nPixX       = pElem->rElem.x + pBox->nMargin + nCurX;
     nPixYBase   = pElem->rElem.y - pBox->nMargin + pElem->rElem.h-1;
 
-    // Calculate Y coordinate
-    nPixYOffset = nDataVal;
-
-    // Clip plot Y coordinate
-    if (nPixY > pBox->nWndHeight) { nPixY = pBox->nWndHeight; }
-    if (nPixY < 0)                { nPixY = 0;                }
+    // Calculate Y value
+    nPixYOffset = (nDataVal >= 0)? nDataVal : 0;
+    // Clip plot Y value
+    if (nPixYOffset > pBox->nWndHeight) { nPixYOffset = pBox->nWndHeight; }
 
     // Calculate final Y coordinate
-    nPixY       = pElem->rElem.y - pBox->nMargin + pElem->rElem.h-1 - nPixYOffset;
-
+    nPixY       = nPixYBase - nPixYOffset;
 
     // Render the datapoints
     if (pBox->eStyle == GSLCX_GRAPH_STYLE_DOT) {

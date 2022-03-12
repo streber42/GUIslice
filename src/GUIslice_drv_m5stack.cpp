@@ -7,7 +7,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -782,9 +782,9 @@ void gslc_DrvDrawBmp24FromSD(gslc_tsGui* pGui,const char *filename, uint16_t x, 
 bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRef sImgRef)
 {
   #if defined(DBG_DRIVER)
-  char addr[6];
+  char addr[9];
   GSLC_DEBUG_PRINT("DBG: DrvDrawImage() with ImgBuf address=","");
-  sprintf(addr,"%04X",(unsigned int)sImgRef.pImgBuf);
+  sprintf(addr,"%08X",(unsigned int)sImgRef.pImgBuf);
   GSLC_DEBUG_PRINT("%s\n",addr);
   #endif
 
@@ -841,6 +841,7 @@ bool gslc_DrvDrawImage(gslc_tsGui* pGui,int16_t nDstX,int16_t nDstY,gslc_tsImgRe
       }
     #else
       // SD card access not enabled
+      GSLC_DEBUG_PRINT("ERROR: GSLC_SD_EN not enabled\n","");
       return false;
     #endif
 
@@ -937,23 +938,31 @@ bool gslc_DrvGetTouch(gslc_tsGui* pGui,int16_t* pnX,int16_t* pnY,uint16_t* pnPre
   if (M5.BtnA.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_A_LONG;
-  }  else if (M5.BtnB.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+  } else if (M5.BtnB.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_B_LONG;
-  }  else if (M5.BtnC.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
+  } else if (M5.BtnC.wasReleasefor(M5STACK_TOUCH_PRESS_LONG)) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_C_LONG;
-  } else if (M5.BtnA.wasReleased()) {
-#else
-  if (M5.BtnA.wasReleased()) {
+  } else
 #endif
+  if (M5.BtnA.wasPressed()) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_A;
-  }  else if (M5.BtnB.wasReleased()) {
+  } else if (M5.BtnA.wasReleased()) {
+    *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+    *pnInputVal = GSLC_PIN_BTN_A;
+  } else if (M5.BtnB.wasPressed()) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
     *pnInputVal = GSLC_PIN_BTN_B;
-  }  else if (M5.BtnC.wasReleased()) {
+  } else if (M5.BtnB.wasReleased()) {
+    *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
+    *pnInputVal = GSLC_PIN_BTN_B;
+  } else if (M5.BtnC.wasPressed()) {
     *peInputEvent = GSLC_INPUT_PIN_ASSERT;
+    *pnInputVal = GSLC_PIN_BTN_C;
+  } else if (M5.BtnC.wasReleased()) {
+    *peInputEvent = GSLC_INPUT_PIN_DEASSERT;
     *pnInputVal = GSLC_PIN_BTN_C;
   } else {
     return false; // No pin event detected

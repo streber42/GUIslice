@@ -7,7 +7,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,11 @@
 #include <stdio.h>
 
 #if (GSLC_USE_PROGMEM)
+  #if defined(__AVR__)
     #include <avr/pgmspace.h>
+  #else
+    #include <pgmspace.h>
+  #endif
 #endif
 
 // ----------------------------------------------------------------------------
@@ -190,9 +194,9 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRe
   // or a smaller, updated region (incremental redraw)
   bool bInc = (eRedraw == GSLC_REDRAW_INC) ? true : false;
 
-  int16_t nDrawStart;
-  int16_t nDrawVal;
-  int16_t nDrawEnd;
+  int16_t nDrawStart = 0;
+  int16_t nDrawVal = 0;
+  int16_t nDrawEnd = 0;
 
   bool bDrawActive = false;
   bool bDrawInactive = false;
@@ -275,8 +279,7 @@ bool gslc_ElemXRingGaugeDraw(void* pvGui, void* pvElemRef, gslc_teRedrawType eRe
       pElem->eTxtAlign, colTxt, GSLC_COL_BLACK, nMarginX, nMarginY);
 
     // Save a copy of the new string content so we can support future erase
-    strncpy(pXRingGauge->acStrLast, pElem->pStrBuf, XRING_STR_MAX);
-    pXRingGauge->acStrLast[XRING_STR_MAX - 1] = 0; // Force null terminator
+    gslc_StrCopy(pXRingGauge->acStrLast, pElem->pStrBuf, XRING_STR_MAX);
 
   } // pStrBuf
 
@@ -332,6 +335,7 @@ void gslc_ElemXRingGaugeSetValRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, 
 
 void gslc_ElemXRingGaugeSetAngleRange(gslc_tsGui* pGui, gslc_tsElemRef* pElemRef, int16_t nStart, int16_t nRange, bool bClockwise)
 {
+  (void)bClockwise; // Unused TODO: Support rotation reversal
   gslc_tsXRingGauge* pXRingGauge = (gslc_tsXRingGauge*)gslc_GetXDataFromRef(pGui, pElemRef, GSLC_TYPEX_RING, __LINE__);
   if (!pXRingGauge) return;
 

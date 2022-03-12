@@ -173,19 +173,19 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
 ///
 /// Create a Togglebtn button Element
 ///
-/// \param[in]  pGui:        Pointer to GUI
-/// \param[in]  nElemId:     Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
-/// \param[in]  nPage:       Page ID to attach element to
-/// \param[in]  nX:          X coordinate of element
-/// \param[in]  nY:          Y coordinate of element
-/// \param[in]  nW:          Width of element
-/// \param[in]  nH:          Height of element
-/// \param[in]  colThumb:    Color of thumb
-/// \param[in]  colOnState:  Color to indicate on position
-/// \param[in]  colOffState: Color to indicate off position
-/// \param[in]  bCircular:   Style of the toggle button circular or rectangular
-/// \param[in]  bChecked:    Default state
-/// \param[in]  cbTouch:     Callback for touch events
+/// \param[in]  pGui:         Pointer to GUI
+/// \param[in]  nElemId:      Element ID to assign (0..16383 or GSLC_ID_AUTO to autogen)
+/// \param[in]  nPage:        Page ID to attach element to
+/// \param[in]  nX:           X coordinate of element
+/// \param[in]  nY:           Y coordinate of element
+/// \param[in]  nW:           Width of element
+/// \param[in]  nH:           Height of element
+/// \param[in]  colThumb_:    Color of thumb
+/// \param[in]  colOnState_:  Color to indicate on position
+/// \param[in]  colOffState_: Color to indicate off position
+/// \param[in]  bCircular_:   Style of the toggle button circular or rectangular
+/// \param[in]  bChecked_:    Default state
+/// \param[in]  cbTouch:      Callback for touch events
 ///
 /// \return none
 ///
@@ -193,7 +193,7 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
 #if (GSLC_USE_PROGMEM)
 
 #define gslc_ElemXTogglebtnCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,colThumb_,colOnState_,colOffState_,bCircular_,bChecked_,cbTouch) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXTogglebtn sTogglebtn##nElemId;                   \
   sTogglebtn##nElemId.bOn = bChecked_;                            \
@@ -235,7 +235,7 @@ gslc_tsElemRef* gslc_ElemXTogglebtnFindSelected(gslc_tsGui* pGui,int16_t nGroupI
 #else
 
 #define gslc_ElemXTogglebtnCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH,colThumb_,colOnState_,colOffState_,bCircular_,bChecked_,cbTouch) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXTogglebtn sTogglebtn##nElemId;                   \
   sTogglebtn##nElemId.bOn = bChecked_;                            \

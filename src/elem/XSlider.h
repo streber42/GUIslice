@@ -13,7 +13,7 @@
 //
 // The MIT License
 //
-// Copyright 2016-2019 Calvin Hass
+// Copyright 2016-2020 Calvin Hass
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -60,6 +60,7 @@ typedef bool (*GSLC_CB_XSLIDER_POS)(void* pvGui,void* pvElem,int16_t nPos);
 typedef struct {
   // Config
   bool            bVert;          ///< Orientation: true if vertical, else horizontal
+  bool            bSnapEn;        ///< Enable for touch snap behavior
   int16_t         nThumbSz;       ///< Size of the thumb control
   int16_t         nPosMin;        ///< Minimum position value of the slider
   int16_t         nPosMax;        ///< Maximum position value of the slider
@@ -114,6 +115,18 @@ void gslc_ElemXSliderSetStyle(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,
         bool bTrim,gslc_tsColor colTrim,uint16_t nTickDiv,
         int16_t nTickLen,gslc_tsColor colTick);
 
+///
+/// Enable touch to snap to the nearest tick mark
+/// - nTickDiv (in SetStyle) must be non-zero for snap to be active
+///
+/// \param[in]  pGui:        Pointer to GUI
+/// \param[in]  pElemRef:    Pointer to Element reference
+/// \param[in]  bSnapEn:     Enable snap function if true
+///
+/// \return none
+///
+void gslc_ElemXSliderSetSnapEn(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,bool bSnapEn);
+
 
 ///
 /// Get a Slider element's current position
@@ -154,7 +167,7 @@ void gslc_ElemXSliderSetPosFunc(gslc_tsGui* pGui,gslc_tsElemRef* pElemRef,GSLC_C
 /// - Called from gslc_ElemDraw()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef:   Void ptr to Element (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eRedraw:     Redraw mode
 ///
 /// \return true if success, false otherwise
@@ -166,7 +179,7 @@ bool gslc_ElemXSliderDraw(void* pvGui,void* pvElemRef,gslc_teRedrawType eRedraw)
 /// - Called from gslc_ElemSendEventTouch()
 ///
 /// \param[in]  pvGui:       Void ptr to GUI (typecast to gslc_tsGui*)
-/// \param[in]  pvElemRef:   Void ptr to Element ref (typecast to gslc_tsElemRef*)
+/// \param[in]  pvElemRef:   Void ptr to Element reference (typecast to gslc_tsElemRef*)
 /// \param[in]  eTouch:      Touch event type
 /// \param[in]  nRelX:       Touch X coord relative to element
 /// \param[in]  nRelY:       Touch Y coord relative to element
@@ -215,10 +228,11 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
 
 #define gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH, \
     nPosMin_,nPosMax_,nPos_,nThumbSz_,bVert_,colFrame_,colFill_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXSlider sSlider##nElemId;                         \
   sSlider##nElemId.bVert = bVert_;                                \
+  sSlider##nElemId.bSnapEn = false;                               \
   sSlider##nElemId.nThumbSz = nThumbSz_;                          \
   sSlider##nElemId.nPosMin = nPosMin_;                            \
   sSlider##nElemId.nPosMax = nPosMax_;                            \
@@ -262,10 +276,11 @@ bool gslc_ElemXSliderTouch(void* pvGui,void* pvElemRef,gslc_teTouch eTouch,int16
 
 #define gslc_ElemXSliderCreate_P(pGui,nElemId,nPage,nX,nY,nW,nH, \
     nPosMin_,nPosMax_,nPos_,nThumbSz_,bVert_,colFrame_,colFill_) \
-  static const uint8_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
+  static const uint16_t nFeatures##nElemId = GSLC_ELEM_FEA_VALID | \
     GSLC_ELEM_FEA_GLOW_EN | GSLC_ELEM_FEA_CLICK_EN | GSLC_ELEM_FEA_FILL_EN; \
   static gslc_tsXSlider sSlider##nElemId;                         \
   sSlider##nElemId.bVert = bVert_;                                \
+  sSlider##nElemId.bSnapEn = false;                               \
   sSlider##nElemId.nThumbSz = nThumbSz_;                          \
   sSlider##nElemId.nPosMin = nPosMin_;                            \
   sSlider##nElemId.nPosMax = nPosMax_;                            \
