@@ -113,7 +113,7 @@ extern "C" {
   //#include "../configs/ard-adagfx-ra8875-notouch.h"
   //#include "../configs/ard-adagfx-ra8876-notouch.h"
   //#include "../configs/ard-adagfx-ra8876-ft5206.h"
-  //#include "../configs/ard-adagfx-ssd1306-notouch.h"
+  #include "../configs/ard-adagfx-ssd1306-notouch.h"
   //#include "../configs/ard-adagfx-st7735-notouch.h"
   //#include "../configs/due-adagfx-ili9225-notouch.h"
   //#include "../configs/due-adagfx-ili9341-ft6206.h"
@@ -137,8 +137,7 @@ extern "C" {
   // ------------------------------------------------------
   //#include "../configs/teensy-adagfx-ili9341-xpt2046.h"
   //#include "../configs/teensy-adagfx-ili9341-xpt2046-audio.h"
-  #include "../configs/teensy-adagfx-ili9341_t3-xpt2046.h"
-  //#include "../configs/teensy-adagfx-ili9341_t3-notouch-audio.h"
+  //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046.h"
   //#include "../configs/teensy-adagfx-ili9341_t3-xpt2046-audio.h"
 
   // STM32:
